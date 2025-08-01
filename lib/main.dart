@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:neopop/neopop.dart';
 import 'auth_pages.dart';
 
 void main() {
@@ -31,66 +31,176 @@ class _AppControllerState extends State<AppController> {
   bool isAuthenticated = false;
   String userName = '';
   String selectedCurrency = 'USD';
+  bool showTransition = false;
 
   void _handleAuthComplete(String name, String currency) {
     setState(() {
-      isAuthenticated = true;
-      userName = name;
-      selectedCurrency = currency;
+      showTransition = true;
+    });
+    
+    // After transition animation completes
+    Future.delayed(Duration(milliseconds: 800), () {
+      setState(() {
+        isAuthenticated = true;
+        userName = name;
+        selectedCurrency = currency;
+        showTransition = false;
+      });
     });
   }
 
   void _handleLogout() {
     setState(() {
-      isAuthenticated = false;
-      userName = '';
-      selectedCurrency = 'USD';
+      showTransition = true;
+    });
+    
+    // After transition animation completes
+    Future.delayed(Duration(milliseconds: 800), () {
+      setState(() {
+        isAuthenticated = false;
+        userName = '';
+        selectedCurrency = 'USD';
+        showTransition = false;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return isAuthenticated
-        ? HomePage(
-            onLogout: _handleLogout,
-            currency: selectedCurrency,
-            userName: userName,
-          )
-        : AuthWrapper(
-            onAuthComplete: _handleAuthComplete,
-          );
-  }
-}
-
-// Temporary AuthWrapper for testing - Remove this when you have auth_pages.dart
-class AuthWrapper extends StatelessWidget {
-  final Function(String, String) onAuthComplete;
-  
-  AuthWrapper({required this.onAuthComplete});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFF0A0A0A),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Temporary Auth Page',
-              style: TextStyle(color: Colors.white, fontSize: 24),
+    return GridTransitionOverlay(
+      showTransition: showTransition,
+      child: isAuthenticated
+          ? HomePage(
+              onLogout: _handleLogout,
+              currency: selectedCurrency,
+              userName: userName,
+            )
+          : AuthWrapper(
+              onAuthComplete: _handleAuthComplete,
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => onAuthComplete('TestUser', 'USD'),
-              child: Text('Skip to Dashboard'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
+
+class GridTransitionOverlay extends StatefulWidget {
+  final Widget child;
+  final bool showTransition;
+  final VoidCallback? onTransitionComplete;
+
+  GridTransitionOverlay({
+    required this.child,
+    required this.showTransition,
+    this.onTransitionComplete,
+  });
+
+  @override
+  _GridTransitionOverlayState createState() => _GridTransitionOverlayState();
+}
+
+class _GridTransitionOverlayState extends State<GridTransitionOverlay>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(GridTransitionOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showTransition && !oldWidget.showTransition) {
+      _controller.forward().then((_) {
+        if (widget.onTransitionComplete != null) {
+          widget.onTransitionComplete!();
+        }
+      });
+    } else if (!widget.showTransition) {
+      _controller.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        if (widget.showTransition)
+          AnimatedBuilder(
+            animation: _fadeAnimation,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: CustomPaint(
+                    painter: GridTransitionPainter(),
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class GridTransitionPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Black background
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = Colors.black,
+    );
+
+    // White grid lines
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.3)
+      ..strokeWidth = 1.0;
+
+    const double gridSize = 30.0;
+
+    // Draw vertical lines
+    for (double x = 0; x < size.width; x += gridSize) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        paint,
+      );
+    }
+
+    // Draw horizontal lines
+    for (double y = 0; y < size.height; y += gridSize) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+
+
 
 // MAIN DASHBOARD - HomePage
 class HomePage extends StatefulWidget {
@@ -155,38 +265,45 @@ class _HomePageState extends State<HomePage> {
     final isMobile = screenWidth < 600;
     
     return Scaffold(
-      backgroundColor: backgroundDark,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isMobile ? double.infinity : 400,
-            ),
-            child: Stack(
-              children: [
-                // Main scrollable content
-                SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(20, 16, 20, isMobile ? 120 : 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(isMobile),
-                      SizedBox(height: 24),
-                      _buildMainCard(isMobile),
-                      SizedBox(height: 24),
-                      _buildQuickActionsHeader(isMobile),
-                      SizedBox(height: 16),
-                      _buildQuickActionsGrid(isMobile),
-                      SizedBox(height: 24),
-                      _buildSegmentedControl(isMobile),
-                      SizedBox(height: 16),
-                      _buildActivityList(isMobile),
-                    ],
-                  ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFF000000), // Black background
+        ),
+        child: CustomPaint(
+          painter: GridBackgroundPainter(),
+          child: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isMobile ? double.infinity : 400,
                 ),
-                // Fixed floating navigation
-                _buildFloatingNav(isMobile),
-              ],
+                child: Stack(
+                  children: [
+                    // Main scrollable content
+                    SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(20, 16, 20, isMobile ? 120 : 100),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(isMobile),
+                          SizedBox(height: 24),
+                          _buildMainCard(isMobile),
+                          SizedBox(height: 24),
+                          _buildQuickActionsHeader(isMobile),
+                          SizedBox(height: 16),
+                          _buildQuickActionsGrid(isMobile),
+                          SizedBox(height: 24),
+                          _buildSegmentedControl(isMobile),
+                          SizedBox(height: 16),
+                          _buildActivityList(isMobile),
+                        ],
+                      ),
+                    ),
+                    // Fixed floating navigation
+                    _buildFloatingNav(isMobile),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -677,7 +794,7 @@ class _HomePageState extends State<HomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(date, style: TextStyle(color: textPrimary, fontSize: isMobile ? 12 : 14, fontWeight: FontWeight.w500)),
+              Text(date, style: TextStyle(color: textPrimary, fontSize: isMobile ? 10 : 14, fontWeight: FontWeight.w500)),
               Text(time, style: TextStyle(color: textSecondary, fontSize: isMobile ? 10 : 12)),
             ],
           ),
