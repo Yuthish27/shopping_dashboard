@@ -720,7 +720,7 @@ class _HomePageState extends State<HomePage> {
                 label,
                 style: TextStyle(
                   color: isHovered && !isMobile ? neonPurple : textSecondary,
-                  fontSize: isMobile ? 10 : 14,
+                  fontSize: isMobile ? 12 : 16,
                   fontWeight: FontWeight.w600,
                   letterSpacing: -0.2,
                 ),
@@ -768,7 +768,7 @@ class _HomePageState extends State<HomePage> {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isActive ? textPrimary : textSecondary,
-            fontSize: isMobile ? 10 : 12,
+            fontSize: isMobile ? 12 : 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -845,82 +845,64 @@ class _HomePageState extends State<HomePage> {
       bottom: isMobile ? 16 : 20,
       left: 20,
       right: 20,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Navigation bar background
-          Container(
-            height: isMobile ? 56 : 64,
-            decoration: BoxDecoration(
-              color: surfaceDark.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
+      child: Container(
+        height: isMobile ? 56 : 64,
+        decoration: BoxDecoration(
+          color: surfaceDark.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: Offset(0, 10))],
+        ),
+        child: Stack(
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildNavItem(Icons.home, 0, isMobile),
                 _buildNavItem(Icons.person_outlined, 1, isMobile),
-                SizedBox(width: isMobile ? 56 : 64), // Space for center button
+                SizedBox(width: isMobile ? 56 : 64),
                 _buildNavItem(Icons.account_balance_wallet_outlined, 3, isMobile),
                 _buildNavItem(Icons.settings_outlined, 4, isMobile),
               ],
             ),
-          ),
-          // Center button - popping above
-          Positioned(
-            top: (isMobile ? -20 : -24), // Negative value to pop above nav bar
-            left: 0,
-            right: 0,
-            child: Center(
-              child: MouseRegion(
-                onEnter: (_) => setState(() => _isCenterButtonHovered = true),
-                onExit: (_) => setState(() => _isCenterButtonHovered = false),
-                child: GestureDetector(
-                  onTap: () => print('Center button tapped'),
-                  child: AnimatedContainer(
-                    duration: Duration(milliseconds: 200),
-                    width: isMobile ? 64 : 72,
-                    height: isMobile ? 64 : 72,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          neonPurple.withOpacity(0.95),
-                          neonPurple,
-                          Color(0xFF8B4CB8),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.center,
+                child: MouseRegion(
+                  onEnter: (_) => setState(() => _isCenterButtonHovered = true),
+                  onExit: (_) => setState(() => _isCenterButtonHovered = false),
+                  child: GestureDetector(
+                    onTap: () => print('Center button tapped'),
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      width: isMobile ? 56 : 64,
+                      height: isMobile ? 56 : 64,
+                      margin: EdgeInsets.only(bottom: isMobile ? 32 : 40),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [neonPurple.withOpacity(0.9), neonPurple, Color(0xFF8B4CB8)],
+                        ),
+                        borderRadius: BorderRadius.circular(isMobile ? 28 : 32),
+                        border: Border.all(color: backgroundDark, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: neonPurple.withOpacity(_isCenterButtonHovered && !isMobile ? 0.6 : 0.4),
+                            blurRadius: _isCenterButtonHovered && !isMobile ? 30 : 20,
+                            offset: Offset(0, _isCenterButtonHovered && !isMobile ? 10 : 6),
+                            spreadRadius: _isCenterButtonHovered && !isMobile ? 3 : 1,
+                          ),
                         ],
                       ),
-                      border: Border.all(color: backgroundDark, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: neonPurple.withOpacity(_isCenterButtonHovered && !isMobile ? 0.7 : 0.5),
-                          blurRadius: _isCenterButtonHovered && !isMobile ? 36 : 24,
-                          offset: Offset(0, _isCenterButtonHovered && !isMobile ? 14 : 8),
-                          spreadRadius: _isCenterButtonHovered && !isMobile ? 4 : 2,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: textPrimary,
-                      size: isMobile ? 32 : 38,
+                      child: Icon(Icons.add_rounded, color: textPrimary, size: isMobile ? 28 : 32),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
