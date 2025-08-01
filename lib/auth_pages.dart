@@ -1,6 +1,7 @@
 // auth_pages.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:neopop/neopop.dart';
 
 // Authentication Wrapper
 class AuthWrapper extends StatefulWidget {
@@ -950,7 +951,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                     SizedBox(height: 32),
                     _buildSignupForm(isMobile),
                     SizedBox(height: 24),
-                    _buildSignupButton(isMobile),
+                    _buildNeoPopSignupButton(isMobile),
                     SizedBox(height: 24),
                     _buildDivider(),
                     SizedBox(height: 24),
@@ -1190,55 +1191,40 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSignupButton(bool isMobile) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isSignupButtonHovered = true),
-      onExit: (_) => setState(() => _isSignupButtonHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          if (_passwordController.text != _confirmPasswordController.text) {
-            print('Passwords do not match');
-            return;
-          }
-          if (!_agreeToTerms) {
-            print('Must agree to terms');
-            return;
-          }
-          String name = _nameController.text.isNotEmpty ? _nameController.text : 'User';
-          print('Signup attempted with name: $name');
-          widget.onSignup(name);
-        },
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 200),
-          width: double.infinity,
-          height: isMobile ? 48 : 52,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                neonPurple.withOpacity(_isSignupButtonHovered ? 1.0 : 0.9),
-                Color(0xFF8B4CB8),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: neonPurple.withOpacity(_isSignupButtonHovered ? 0.5 : 0.3),
-                blurRadius: _isSignupButtonHovered ? 25 : 15,
-                offset: Offset(0, _isSignupButtonHovered ? 8 : 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              'Create Account',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: isMobile ? 14 : 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+  // NeoPop signup button with app color scheme (purple) and darker purple border
+  Widget _buildNeoPopSignupButton(bool isMobile) {
+    return NeoPopTiltedButton(
+      isFloating: true,
+      onTapUp: () {
+        if (_passwordController.text != _confirmPasswordController.text) {
+          print('Passwords do not match');
+          return;
+        }
+        if (!_agreeToTerms) {
+          print('Must agree to terms');
+          return;
+        }
+        String name = _nameController.text.isNotEmpty ? _nameController.text : 'User';
+        print('Signup attempted with name: $name');
+        widget.onSignup(name);
+      },
+      decoration: NeoPopTiltedButtonDecoration(
+        color: neonPurple, // Main button color (purple)
+        plunkColor: Color(0xFF8B4CB8), // Slightly darker purple for plunk
+        shadowColor: Color(0xFF808080),
+        showShimmer:true,
+        border: Border.fromBorderSide(
+          BorderSide(color: Color(0xFF6C3483), width: 1.5), // Darker purple border
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 140.0, vertical: 12),
+        child: Text(
+          'Sign Up',
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: isMobile ? 14 : 16,
           ),
         ),
       ),
