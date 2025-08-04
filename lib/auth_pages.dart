@@ -170,11 +170,6 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [neonPurple, Color(0xFF8B4CB8)],
-          ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -184,10 +179,14 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
             ),
           ],
         ),
-        child: Icon(
-          Icons.shopping_bag_rounded,
-          color: textPrimary,
-          size: 36,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.asset(
+            'assets/duolingo.gif', // Add this GIF to your assets folder
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
@@ -675,46 +674,30 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   Widget _buildLoginButton(bool isMobile) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isLoginButtonHovered = true),
-      onExit: (_) => setState(() => _isLoginButtonHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          String name = _extractNameFromEmail(_emailController.text);
-          print('Login attempted with: ${_emailController.text}, extracted name: $name');
-          widget.onLogin(name);
-        },
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 200),
-          width: double.infinity,
-          height: isMobile ? 48 : 52,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                neonPurple.withOpacity(_isLoginButtonHovered ? 1.0 : 0.9),
-                Color(0xFF8B4CB8),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: neonPurple.withOpacity(_isLoginButtonHovered ? 0.5 : 0.3),
-                blurRadius: _isLoginButtonHovered ? 25 : 15,
-                offset: Offset(0, _isLoginButtonHovered ? 8 : 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              'Sign In',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: isMobile ? 14 : 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+    return NeoPopTiltedButton(
+      isFloating: true,
+      onTapUp: () {
+        String name = _extractNameFromEmail(_emailController.text);
+        print('Login attempted with: ${_emailController.text}, extracted name: $name');
+        widget.onLogin(name);
+      },
+      decoration: NeoPopTiltedButtonDecoration(
+        color: neonPurple, // Main button color (purple)
+        plunkColor: Color(0xFF8B4CB8), // Slightly darker purple for plunk
+        shadowColor: Color(0xFF808080),
+        showShimmer: true,
+        border: Border.fromBorderSide(
+          BorderSide(color: Color(0xFF6C3483), width: 1.5), // Darker purple border
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 140.0, vertical: 12),
+        child: Text(
+          'Sign In',
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: isMobile ? 14 : 16,
           ),
         ),
       ),

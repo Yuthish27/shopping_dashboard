@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
       title: 'Power Shopper',
       theme: ThemeData(
         primarySwatch: Colors.purple,
-        textTheme: GoogleFonts.spaceGroteskTextTheme(),
+        textTheme: GoogleFonts.robotoTextTheme(),
+
       ),
       home: AppController(),
       debugShowCheckedModeBanner: false,
@@ -198,9 +199,7 @@ class FlowingLightGridPainter extends CustomPainter {
       );
     }
 
-    // Animate a wavy shape using only the grid lights
-    // The wave shape is defined by a sine function, and only grid intersections near the wave are lit up
-
+    // Animate a wavy shape using only the grid lines
     double wavePhase = animationValue * 2 * math.pi;
     double amplitude = gridSize * 2.2;
     double frequency = 2.5; // number of waves across the width
@@ -211,30 +210,8 @@ class FlowingLightGridPainter extends CustomPainter {
           (size.height * 0.6) * animationValue +
           amplitude * math.sin((frequency * 2 * math.pi * x / size.width) + wavePhase);
 
-      // Find the closest grid line to waveY
-      double closestY = (waveY / gridSize).round() * gridSize;
-
-      // Light up the intersection at (x, closestY)
-      double distance = (waveY - closestY).abs();
-      double maxGlow = gridSize * 1.2;
-      if (distance < maxGlow) {
-        double alpha = (1 - (distance / maxGlow)).clamp(0.0, 1.0);
-        final glowPaint = Paint()
-          ..color = Colors.white.withOpacity(alpha * 0.95)
-          ..strokeWidth = 6.0
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 8);
-
-        canvas.drawCircle(Offset(x, closestY), 5.5, glowPaint);
-
-        // Draw a smaller highlight
-        final highlightPaint = Paint()
-          ..color = Colors.white.withOpacity(0.98)
-          ..strokeWidth = 2.0
-          ..strokeCap = StrokeCap.round;
-
-        canvas.drawCircle(Offset(x, closestY), 2.5, highlightPaint);
-      }
+      // Draw the grid intersection (without lighting effect)
+      canvas.drawCircle(Offset(x, waveY), 2.0, basePaint);
     }
   }
 
